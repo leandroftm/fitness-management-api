@@ -3,7 +3,7 @@ spring:
     name: fitness-management-api
 
   datasource:
-    url: JDBC:h2:mem:fitnessdb
+    url: jdbc:h2:mem:fitnessdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
