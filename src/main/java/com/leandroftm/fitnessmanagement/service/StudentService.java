@@ -1,8 +1,10 @@
 package com.leandroftm.fitnessmanagement.service;
 
 
+import com.leandroftm.fitnessmanagement.dto.AddressRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
+import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.entity.Address;
 import com.leandroftm.fitnessmanagement.entity.Student;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
@@ -29,16 +31,33 @@ public class StudentService {
         return studentRepository.findAll(pageable).map(StudentListDTO::new);
     }
 
+    @Transactional
+    public void update(Long id, StudentUpdateDTO dto) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found with id: " + id));
+        if (!student.getEmail().equals(dto.email())) {
+            validateEmailUnique(dto.email());
+            student.setEmail(dto.email());
+        }
+        student.setFullName(dto.fullName());
+        student.setPhoneNumber(dto.phoneNumber());
+        student.setGender(dto.gender());
 
+        updateAddress(student.getAddress(), dto.address());
+    }
+
+    private void updateAddress(Address address, AddressRequestDTO dto) {
+        address.setStreet(dto.street());
+        address.setNumber(dto.number());
+        address.setComplement(dto.complement());
+        address.setCity(dto.city());
+        address.setState(dto.state());
+        address.setZipCode(dto.zipCode());
+    }
 
     private Student toEntity(StudentCreateRequestDTO dto) {
         Address address = new Address();
-        address.setStreet(dto.address().street());
-        address.setNumber(dto.address().number());
-        address.setComplement(dto.address().complement());
-        address.setCity(dto.address().city());
-        address.setState(dto.address().state());
-        address.setZipCode(dto.address().zipCode());
+        updateAddress(address, dto.address());
 
         Student student = new Student();
         student.setFullName(dto.fullName());
@@ -48,7 +67,6 @@ public class StudentService {
         student.setAddress(address);
 
         return student;
-
     }
 
     private void validateEmailUnique(String email) {
