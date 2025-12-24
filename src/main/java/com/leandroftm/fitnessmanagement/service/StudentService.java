@@ -7,6 +7,8 @@ import com.leandroftm.fitnessmanagement.entity.Student;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +23,12 @@ public class StudentService {
         Student student = studentRepository.save(toEntity(dto));
         return student.getId();
     }
+
+    public Page<Student> findAll(Pageable pageable) {
+        return studentRepository.findAll(pageable);
+    }
+    
+
 
     private Student toEntity(StudentCreateRequestDTO dto) {
         Address address = new Address();
