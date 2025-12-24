@@ -2,6 +2,7 @@ package com.leandroftm.fitnessmanagement.service;
 
 
 import com.leandroftm.fitnessmanagement.dto.StudentCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
 import com.leandroftm.fitnessmanagement.entity.Address;
 import com.leandroftm.fitnessmanagement.entity.Student;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
@@ -24,10 +25,10 @@ public class StudentService {
         return student.getId();
     }
 
-    public Page<Student> findAll(Pageable pageable) {
-        return studentRepository.findAll(pageable);
+    public Page<StudentListDTO> findAll(Pageable pageable) {
+        return studentRepository.findAll(pageable).map(StudentListDTO::new);
     }
-    
+
 
 
     private Student toEntity(StudentCreateRequestDTO dto) {
