@@ -8,8 +8,10 @@ import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.domain.entity.Address;
 import com.leandroftm.fitnessmanagement.domain.entity.Student;
+import com.leandroftm.fitnessmanagement.exception.domain.DuplicateEmailException;
+import com.leandroftm.fitnessmanagement.exception.domain.StudentAlreadyInactiveException;
+import com.leandroftm.fitnessmanagement.exception.domain.StudentNotFoundException;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,7 +40,7 @@ public class StudentService {
     @Transactional
     public void update(Long id, StudentUpdateDTO dto) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+                .orElseThrow(() -> new StudentNotFoundException(id));
         if (!student.getEmail().equals(dto.email())) {
             validateEmailUnique(dto.email());
             student.setEmail(dto.email());
@@ -53,10 +55,10 @@ public class StudentService {
     @Transactional
     public void deactivate(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+                .orElseThrow(() -> new StudentNotFoundException(id));
 
         if (student.getStatus() == StudentStatus.INACTIVE) {
-            throw new IllegalArgumentException("Student is already inactive");
+            throw new StudentAlreadyInactiveException(id);
         }
         student.setStatus(StudentStatus.INACTIVE);
         student.setUpdatedAt(LocalDateTime.now());
@@ -87,7 +89,7 @@ public class StudentService {
 
     private void validateEmailUnique(String email) {
         if (studentRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already registered: " + email);
+            throw new DuplicateEmailException(email);
         }
     }
 }

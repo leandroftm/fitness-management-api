@@ -1,5 +1,7 @@
 package com.leandroftm.fitnessmanagement.exception;
 
+import com.leandroftm.fitnessmanagement.exception.domain.DomainException;
+import com.leandroftm.fitnessmanagement.exception.domain.StudentNotFoundException;
 import com.leandroftm.fitnessmanagement.exception.dto.ApiErrorDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,32 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiErrorDTO> handleEntityNotFound(EntityNotFoundException ex,
                                                             HttpServletRequest request) {
+        ApiErrorDTO error = new ApiErrorDTO(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ApiErrorDTO> handleDomainException(DomainException ex,
+                                                            HttpServletRequest request) {
+        ApiErrorDTO error = new ApiErrorDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(StudentNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleStudentNotFoundException(StudentNotFoundException ex,
+                                                                      HttpServletRequest request) {
         ApiErrorDTO error = new ApiErrorDTO(
                 HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
