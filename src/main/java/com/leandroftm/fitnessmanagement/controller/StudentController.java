@@ -46,4 +46,10 @@ public class StudentController {
         studentService.update(id, dto);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        studentService.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
 }
