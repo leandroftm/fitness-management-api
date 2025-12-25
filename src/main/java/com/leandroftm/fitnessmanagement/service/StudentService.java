@@ -1,6 +1,7 @@
 package com.leandroftm.fitnessmanagement.service;
 
 
+import com.leandroftm.fitnessmanagement.domain.enums.StudentStatus;
 import com.leandroftm.fitnessmanagement.dto.AddressRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
@@ -8,11 +9,14 @@ import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.domain.entity.Address;
 import com.leandroftm.fitnessmanagement.domain.entity.Student;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +32,13 @@ public class StudentService {
     }
 
     public Page<StudentListDTO> findAll(Pageable pageable) {
-        return studentRepository.findAll(pageable).map(StudentListDTO::new);
+        return studentRepository.findAllByStatus(StudentStatus.ACTIVE, pageable).map(StudentListDTO::new);
     }
 
     @Transactional
     public void update(Long id, StudentUpdateDTO dto) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
         if (!student.getEmail().equals(dto.email())) {
             validateEmailUnique(dto.email());
             student.setEmail(dto.email());
@@ -44,6 +48,18 @@ public class StudentService {
         student.setGender(dto.gender());
 
         updateAddress(student.getAddress(), dto.address());
+    }
+
+    @Transactional
+    public void deactivate(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+
+        if (student.getStatus() == StudentStatus.INACTIVE) {
+            throw new IllegalArgumentException("Student is already inactive");
+        }
+        student.setStatus(StudentStatus.INACTIVE);
+        student.setUpdatedAt(LocalDateTime.now());
     }
 
     private void updateAddress(Address address, AddressRequestDTO dto) {
