@@ -1,6 +1,6 @@
-package com.leandroftm.fitnessmanagement.entity;
+package com.leandroftm.fitnessmanagement.domain.entity;
 
-import com.leandroftm.fitnessmanagement.enums.Gender;
+import com.leandroftm.fitnessmanagement.domain.enums.Gender;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

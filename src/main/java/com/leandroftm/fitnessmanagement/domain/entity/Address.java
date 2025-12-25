@@ -1,4 +1,4 @@
-package com.leandroftm.fitnessmanagement.entity;
+package com.leandroftm.fitnessmanagement.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

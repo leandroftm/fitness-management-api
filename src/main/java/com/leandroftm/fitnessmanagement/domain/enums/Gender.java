@@ -1,4 +1,4 @@
-package com.leandroftm.fitnessmanagement.enums;
+package com.leandroftm.fitnessmanagement.domain.enums;
 
 public enum Gender {
     MALE("Male"),

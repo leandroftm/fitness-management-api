@@ -1,6 +1,6 @@
 package com.leandroftm.fitnessmanagement.repository;
 
-import com.leandroftm.fitnessmanagement.entity.Student;
+import com.leandroftm.fitnessmanagement.domain.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

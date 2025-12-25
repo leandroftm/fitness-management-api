@@ -1,6 +1,6 @@
 package com.leandroftm.fitnessmanagement.dto;
 
-import com.leandroftm.fitnessmanagement.enums.Gender;
+import com.leandroftm.fitnessmanagement.domain.enums.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

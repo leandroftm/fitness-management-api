@@ -1,7 +1,7 @@
 package com.leandroftm.fitnessmanagement.dto;
 
-import com.leandroftm.fitnessmanagement.entity.Student;
-import com.leandroftm.fitnessmanagement.enums.Gender;
+import com.leandroftm.fitnessmanagement.domain.entity.Student;
+import com.leandroftm.fitnessmanagement.domain.enums.Gender;
 
 public record StudentListDTO(
         Long id,
