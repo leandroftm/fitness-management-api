@@ -12,7 +12,7 @@ import com.leandroftm.fitnessmanagement.exception.domain.DuplicateEmailException
 import com.leandroftm.fitnessmanagement.exception.domain.StudentAlreadyInactiveException;
 import com.leandroftm.fitnessmanagement.exception.domain.StudentNotFoundException;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
