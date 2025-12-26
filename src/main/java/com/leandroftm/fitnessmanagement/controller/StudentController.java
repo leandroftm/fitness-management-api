@@ -28,7 +28,8 @@ public class StudentController {
     public ResponseEntity<Void> create(@Valid @RequestBody StudentCreateRequestDTO dto) {
         Long id = studentService.create(dto);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(id)
                 .toUri();
