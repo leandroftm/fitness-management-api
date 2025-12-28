@@ -61,12 +61,4 @@ public class TrainingProgramExercise {
         this.createdAt = LocalDateTime.now();
     }
 
-    //business rule on service
-    /*
-    no repeat same exercise on same program
-    no alter inactive program
-    no add inactive exercise
-    required exercise order
-    program can be: activate/deactivate
-    */
 }
