@@ -37,8 +37,8 @@ public class TrainingProgramExercise {
             nullable = false,
             foreignKey = @ForeignKey(name = "FK_program_exercise_program")
     )
-
     private TrainingProgram trainingProgram;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(

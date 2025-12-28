@@ -6,10 +6,13 @@ import com.leandroftm.fitnessmanagement.domain.entity.TrainingProgramExercise;
 import com.leandroftm.fitnessmanagement.domain.enums.ExerciseStatus;
 import com.leandroftm.fitnessmanagement.domain.enums.TrainingProgramStatus;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseListDTO;
 import com.leandroftm.fitnessmanagement.exception.domain.*;
 import com.leandroftm.fitnessmanagement.repository.ExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,13 @@ public class TrainingProgramExerciseService {
         trainingProgramExercise.setExercise(exercise);
         trainingProgramExercise.setExerciseOrder(dto.exerciseOrder());
         return trainingProgramExerciseRepository.save(trainingProgramExercise).getId();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TrainingProgramExerciseListDTO> list(Pageable pageable, Long programId) {
+        TrainingProgram program = findProgramById(programId);
+
+        return trainingProgramExerciseRepository.findAllByTrainingProgram(program, pageable).map(TrainingProgramExerciseListDTO::new);
     }
 
     private void validateCreate(TrainingProgram trainingProgram, Exercise exercise, TrainingProgramExerciseCreateRequestDTO dto) {
