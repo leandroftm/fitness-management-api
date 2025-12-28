@@ -6,7 +6,7 @@ import com.leandroftm.fitnessmanagement.dto.TrainingProgramCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramListDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramUpdateDTO;
 import com.leandroftm.fitnessmanagement.exception.domain.DuplicateTrainingProgramNameException;
-import com.leandroftm.fitnessmanagement.exception.domain.TrainingNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.TrainingProgramNotFoundException;
 import com.leandroftm.fitnessmanagement.exception.domain.TrainingProgramInactiveException;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
 import org.springframework.data.domain.Page;
@@ -71,7 +71,7 @@ public class TrainingProgramService {
 
     private TrainingProgram findByIdOrThrow(Long id) {
         return trainingProgramRepository.findById(id).orElseThrow(
-                () -> new TrainingNotFoundException(id)
+                () -> new TrainingProgramNotFoundException(id)
         );
     }
 
