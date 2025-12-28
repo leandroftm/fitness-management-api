@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TrainingProgramRepository extends JpaRepository<TrainingProgram, Long> {
     Page<TrainingProgram> findAllByStatus(TrainingProgramStatus trainingProgramStatus, Pageable pageable);
+
+    boolean existsByNameIgnoreCase(String name);
 }
