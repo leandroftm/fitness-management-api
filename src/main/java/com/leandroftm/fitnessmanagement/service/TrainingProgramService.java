@@ -5,14 +5,14 @@ import com.leandroftm.fitnessmanagement.domain.enums.TrainingProgramStatus;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramListDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramUpdateDTO;
-import com.leandroftm.fitnessmanagement.exception.domain.DuplicateTrainingProgramNameException;
-import com.leandroftm.fitnessmanagement.exception.domain.TrainingProgramNotFoundException;
-import com.leandroftm.fitnessmanagement.exception.domain.TrainingProgramInactiveException;
+import com.leandroftm.fitnessmanagement.exception.domain.*;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -37,7 +37,7 @@ public class TrainingProgramService {
     public void update(Long id, TrainingProgramUpdateDTO dto) {
         TrainingProgram program = findByIdOrThrow(id);
 
-        if(program.getStatus() == TrainingProgramStatus.INACTIVE) {
+        if (program.getStatus() == TrainingProgramStatus.INACTIVE) {
             throw new TrainingProgramInactiveException(id);
         }
 
@@ -51,12 +51,28 @@ public class TrainingProgramService {
         program.setDescription(dto.description());
     }
 
+    public void deactivate(Long id) {
+        TrainingProgram program = findByIdOrThrow(id);
+
+        if (program.getStatus() == TrainingProgramStatus.INACTIVE) {
+            throw new TrainingProgramAlreadyInactiveException(id);
+        }
+        program.setStatus(TrainingProgramStatus.INACTIVE);
+        program.setDeactivatedAt(LocalDateTime.now());
+    }
+
+    public void activate(Long id) {
+        TrainingProgram program = findByIdOrThrow(id);
+
+        if (program.getStatus() == TrainingProgramStatus.ACTIVE) {
+            throw new TrainingProgramAlreadyActiveException(id);
+        }
+
+        program.setStatus(TrainingProgramStatus.ACTIVE);
+        program.setDeactivatedAt(null);
+    }
+
     //TODO
-
-
-    //ACTIVATE
-
-    //DEACTIVATE
 
     //ADD EXERCISE
 
