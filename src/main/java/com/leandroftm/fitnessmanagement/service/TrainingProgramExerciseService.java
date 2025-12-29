@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 public class TrainingProgramExerciseService {
@@ -52,6 +54,22 @@ public class TrainingProgramExerciseService {
         TrainingProgram program = findProgramById(programId);
 
         return trainingProgramExerciseRepository.findAllByTrainingProgram(program, pageable).map(TrainingProgramExerciseListDTO::new);
+    }
+
+    public void remove(Long programId, Long exerciseId) {
+        TrainingProgram program = findProgramById(programId);
+
+        if (program.getStatus() == TrainingProgramStatus.INACTIVE) {
+            throw new TrainingProgramInactiveException(programId);
+        }
+
+        Exercise exercise = findExerciseById(exerciseId);
+
+        TrainingProgramExercise programExercise = trainingProgramExerciseRepository
+                .findByTrainingProgramAndExercise(program, exercise).orElseThrow(
+                        () -> new ExerciseNotInTrainingProgramException(programId, exerciseId)
+                );
+        trainingProgramExerciseRepository.delete(programExercise);
     }
 
     private void validateCreate(TrainingProgram trainingProgram, Exercise exercise, TrainingProgramExerciseCreateRequestDTO dto) {
