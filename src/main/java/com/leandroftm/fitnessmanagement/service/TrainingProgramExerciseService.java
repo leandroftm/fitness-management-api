@@ -56,6 +56,7 @@ public class TrainingProgramExerciseService {
         return trainingProgramExerciseRepository.findAllByTrainingProgram(program, pageable).map(TrainingProgramExerciseListDTO::new);
     }
 
+    //remove training program exercise
     public void remove(Long programId, Long exerciseId) {
         TrainingProgram program = findProgramById(programId);
 
@@ -70,6 +71,27 @@ public class TrainingProgramExerciseService {
                         () -> new ExerciseNotInTrainingProgramException(programId, exerciseId)
                 );
         trainingProgramExerciseRepository.delete(programExercise);
+    }
+
+    public void updateExerciseOrder(Long programId, Long exerciseId, int exerciseOrder) {
+        TrainingProgram program = findProgramById(programId);
+
+        if (program.getStatus() == TrainingProgramStatus.INACTIVE) {
+            throw new TrainingProgramInactiveException(programId);
+        }
+        Exercise exercise = findExerciseById(exerciseId);
+
+        TrainingProgramExercise programExercise = trainingProgramExerciseRepository
+                .findByTrainingProgramAndExercise(program, exercise).orElseThrow(
+                        () -> new ExerciseNotInTrainingProgramException(programId, exerciseId)
+                );
+
+        if (programExercise.getExerciseOrder() != exerciseOrder
+                && trainingProgramExerciseRepository.existsByTrainingProgramAndExerciseOrder(program, exerciseOrder)) {
+            throw new DuplicateExerciseOrderException(exerciseId, programExercise.getExerciseOrder());
+        }
+
+        programExercise.setExerciseOrder(exerciseOrder);
     }
 
     private void validateCreate(TrainingProgram trainingProgram, Exercise exercise, TrainingProgramExerciseCreateRequestDTO dto) {
