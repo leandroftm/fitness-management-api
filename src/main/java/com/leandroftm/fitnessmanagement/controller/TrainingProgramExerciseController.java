@@ -3,6 +3,7 @@ package com.leandroftm.fitnessmanagement.controller;
 import com.leandroftm.fitnessmanagement.dto.ExerciseListDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseListDTO;
+import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.TrainingProgramExerciseService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -47,6 +48,16 @@ public class TrainingProgramExerciseController {
         Page<TrainingProgramExerciseListDTO> page = trainingProgramExerciseService.list(pageable, programId);
 
         return ResponseEntity.ok(page);
+    }
+
+    @PutMapping("/{exerciseId}/order")
+    public ResponseEntity<Void> updateOrder(
+            @PathVariable Long programId,
+            @PathVariable Long exerciseId,
+            @Valid @RequestBody TrainingProgramExerciseUpdateDTO dto) {
+        trainingProgramExerciseService.updateExerciseOrder(programId, exerciseId, dto.exerciseOrder());
+
+        return ResponseEntity.noContent().build();
     }
 
 
