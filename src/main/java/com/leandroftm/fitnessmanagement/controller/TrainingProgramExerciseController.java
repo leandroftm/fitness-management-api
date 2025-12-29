@@ -1,8 +1,13 @@
 package com.leandroftm.fitnessmanagement.controller;
 
+import com.leandroftm.fitnessmanagement.dto.ExerciseListDTO;
 import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseListDTO;
 import com.leandroftm.fitnessmanagement.service.TrainingProgramExerciseService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -10,7 +15,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/training-program/{programId}/exercises")
+@RequestMapping("/training-programs/{programId}/exercises")
 public class TrainingProgramExerciseController {
 
     private final TrainingProgramExerciseService trainingProgramExerciseService;
@@ -33,4 +38,16 @@ public class TrainingProgramExerciseController {
 
         return ResponseEntity.created(uri).build();
     }
+
+    @GetMapping
+    public ResponseEntity<Page<TrainingProgramExerciseListDTO>> list(
+            @PageableDefault(size = 20) Pageable pageable,
+            @PathVariable Long programId
+    ) {
+        Page<TrainingProgramExerciseListDTO> page = trainingProgramExerciseService.list(pageable, programId);
+
+        return ResponseEntity.ok(page);
+    }
+
+
 }
