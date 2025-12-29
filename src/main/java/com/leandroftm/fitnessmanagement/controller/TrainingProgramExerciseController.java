@@ -60,5 +60,9 @@ public class TrainingProgramExerciseController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @DeleteMapping("/{exerciseId}")
+    public ResponseEntity<Void> delete(@PathVariable Long programId, @PathVariable Long exerciseId) {
+        trainingProgramExerciseService.remove(programId, exerciseId);
+        return ResponseEntity.noContent().build();
+    }
 }
