@@ -8,10 +8,11 @@ import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.domain.entity.Address;
 import com.leandroftm.fitnessmanagement.domain.entity.Student;
-import com.leandroftm.fitnessmanagement.exception.domain.DuplicateEmailException;
-import com.leandroftm.fitnessmanagement.exception.domain.StudentAlreadyInactiveException;
-import com.leandroftm.fitnessmanagement.exception.domain.StudentNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.*;
+import com.leandroftm.fitnessmanagement.infra.client.cep.CepClient;
+import com.leandroftm.fitnessmanagement.infra.client.cep.CepResponseDTO;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,60 +23,16 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final CepClient cepClient;
 
-    @Transactional
     public Long create(StudentCreateRequestDTO dto) {
         validateEmailUnique(dto.email());
-        Student student = studentRepository.save(toEntity(dto));
-        return student.getId();
-    }
 
-    public Page<StudentListDTO> findAll(Pageable pageable) {
-        return studentRepository.findAllByStatus(StudentStatus.ACTIVE, pageable).map(StudentListDTO::new);
-    }
-
-    @Transactional
-    public void update(Long id, StudentUpdateDTO dto) {
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));
-        if (!student.getEmail().equals(dto.email())) {
-            validateEmailUnique(dto.email());
-            student.setEmail(dto.email());
-        }
-        student.setFullName(dto.fullName());
-        student.setPhoneNumber(dto.phoneNumber());
-        student.setGender(dto.gender());
-
-        updateAddress(student.getAddress(), dto.address());
-    }
-
-    @Transactional
-    public void deactivate(Long id) {
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));
-
-        if (student.getStatus() == StudentStatus.INACTIVE) {
-            throw new StudentAlreadyInactiveException(id);
-        }
-        student.setStatus(StudentStatus.INACTIVE);
-        student.setUpdatedAt(LocalDateTime.now());
-    }
-
-    private void updateAddress(Address address, AddressCreateRequestDTO dto) {
-        address.setStreet(dto.street());
-        address.setNumber(dto.number());
-        address.setComplement(dto.complement());
-        address.setCity(dto.city());
-        address.setState(dto.state());
-        address.setZipCode(dto.zipCode());
-    }
-
-    private Student toEntity(StudentCreateRequestDTO dto) {
-        Address address = new Address();
-        updateAddress(address, dto.address());
+        Address address = buildAddressFromCep(dto.address());
 
         Student student = new Student();
         student.setFullName(dto.fullName());
@@ -84,7 +41,66 @@ public class StudentService {
         student.setGender(dto.gender());
         student.setAddress(address);
 
-        return student;
+        studentRepository.save(student);
+        return student.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<StudentListDTO> findAll(Pageable pageable) {
+        return studentRepository.findAllByStatus(StudentStatus.ACTIVE, pageable).map(StudentListDTO::new);
+    }
+
+    public void deactivate(Long id) {
+        Student student = findByIdOrThrow(id);
+
+        if (student.getStatus() == StudentStatus.INACTIVE) {
+            throw new StudentAlreadyInactiveException(id);
+        }
+        student.setStatus(StudentStatus.INACTIVE);
+        student.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private Student findByIdOrThrow(Long id) {
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException(id));
+    }
+
+    private void updateAddressFromCep(Address address, AddressCreateRequestDTO dto) {
+        String normalizeZipCode = normalizeZipCode(dto.zipCode());
+        CepResponseDTO cepResponse = cepClient.findZipCode(normalizeZipCode);
+        if (cepResponse == null || Boolean.TRUE.equals(cepResponse.error())) {
+            throw new InvalidZipCodeException(dto.zipCode());
+        }
+
+        address.setZipCode(cepResponse.zipCode());
+        address.setStreet(cepResponse.street());
+        address.setCity(cepResponse.city());
+        address.setState(cepResponse.state());
+        address.setNumber(dto.number());
+        address.setComplement(dto.complement());
+    }
+
+    private Address buildAddressFromCep(AddressCreateRequestDTO dto) {
+        String normalizeZipCode = normalizeZipCode(dto.zipCode());
+        CepResponseDTO cepResponse = cepClient.findZipCode(normalizeZipCode);
+
+        if (cepResponse == null || Boolean.TRUE.equals(cepResponse.error())) {
+            throw new InvalidZipCodeException(dto.zipCode());
+        }
+
+        Address address = new Address();
+        address.setZipCode(cepResponse.zipCode());
+        address.setStreet(cepResponse.street());
+        address.setCity(cepResponse.city());
+        address.setState(cepResponse.state());
+        address.setNumber(dto.number());
+        address.setComplement(dto.complement());
+
+        return address;
+    }
+
+    private String normalizeZipCode(String zipCode) {
+        return zipCode.replaceAll("\\D", "");
     }
 
     private void validateEmailUnique(String email) {
