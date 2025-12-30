@@ -2,7 +2,7 @@ package com.leandroftm.fitnessmanagement.service;
 
 
 import com.leandroftm.fitnessmanagement.domain.enums.StudentStatus;
-import com.leandroftm.fitnessmanagement.dto.AddressRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.AddressCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
 import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
@@ -64,7 +64,7 @@ public class StudentService {
         student.setUpdatedAt(LocalDateTime.now());
     }
 
-    private void updateAddress(Address address, AddressRequestDTO dto) {
+    private void updateAddress(Address address, AddressCreateRequestDTO dto) {
         address.setStreet(dto.street());
         address.setNumber(dto.number());
         address.setComplement(dto.complement());

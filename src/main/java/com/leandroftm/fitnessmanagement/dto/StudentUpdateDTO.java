@@ -25,6 +25,6 @@ public record StudentUpdateDTO(
         Gender gender,
 
         @NotNull
-        AddressRequestDTO address
+        AddressCreateRequestDTO address
 ) {
 }

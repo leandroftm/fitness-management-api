@@ -20,6 +20,6 @@ public record StudentCreateRequestDTO(
         @NotNull
         Gender gender,
         @NotNull
-        AddressRequestDTO address
+        AddressCreateRequestDTO address
 ) {
 }
