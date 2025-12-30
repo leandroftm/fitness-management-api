@@ -1,7 +1,7 @@
 package com.leandroftm.fitnessmanagement.exception;
 
 import com.leandroftm.fitnessmanagement.exception.domain.DomainException;
-import com.leandroftm.fitnessmanagement.exception.domain.StudentNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.student.StudentNotFoundException;
 import com.leandroftm.fitnessmanagement.exception.dto.ApiErrorDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;

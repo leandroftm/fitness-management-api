@@ -2,10 +2,10 @@ package com.leandroftm.fitnessmanagement.service;
 
 import com.leandroftm.fitnessmanagement.domain.entity.TrainingProgram;
 import com.leandroftm.fitnessmanagement.domain.enums.TrainingProgramStatus;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramListDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramUpdateDTO;
-import com.leandroftm.fitnessmanagement.exception.domain.*;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramListDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramUpdateDTO;
+import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.*;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

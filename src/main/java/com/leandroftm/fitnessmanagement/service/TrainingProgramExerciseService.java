@@ -5,9 +5,15 @@ import com.leandroftm.fitnessmanagement.domain.entity.TrainingProgram;
 import com.leandroftm.fitnessmanagement.domain.entity.TrainingProgramExercise;
 import com.leandroftm.fitnessmanagement.domain.enums.ExerciseStatus;
 import com.leandroftm.fitnessmanagement.domain.enums.TrainingProgramStatus;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseListDTO;
-import com.leandroftm.fitnessmanagement.exception.domain.*;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramExerciseListDTO;
+import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseInactiveException;
+import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseNotInTrainingProgramException;
+import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.DuplicateExerciseInProgramException;
+import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.DuplicateExerciseOrderException;
+import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.TrainingProgramInactiveException;
+import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.TrainingProgramNotFoundException;
 import com.leandroftm.fitnessmanagement.repository.ExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
@@ -15,8 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @Transactional

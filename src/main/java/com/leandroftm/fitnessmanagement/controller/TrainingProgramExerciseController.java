@@ -1,9 +1,8 @@
 package com.leandroftm.fitnessmanagement.controller;
 
-import com.leandroftm.fitnessmanagement.dto.ExerciseListDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseListDTO;
-import com.leandroftm.fitnessmanagement.dto.TrainingProgramExerciseUpdateDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramExerciseListDTO;
+import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramExerciseUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.TrainingProgramExerciseService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;

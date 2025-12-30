@@ -2,17 +2,16 @@ package com.leandroftm.fitnessmanagement.service;
 
 
 import com.leandroftm.fitnessmanagement.domain.enums.StudentStatus;
-import com.leandroftm.fitnessmanagement.dto.AddressCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.StudentCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.StudentListDTO;
-import com.leandroftm.fitnessmanagement.dto.StudentUpdateDTO;
+import com.leandroftm.fitnessmanagement.dto.student.AddressCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.student.StudentCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.student.StudentListDTO;
+import com.leandroftm.fitnessmanagement.dto.student.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.domain.entity.Address;
 import com.leandroftm.fitnessmanagement.domain.entity.Student;
-import com.leandroftm.fitnessmanagement.exception.domain.*;
+import com.leandroftm.fitnessmanagement.exception.domain.student.*;
 import com.leandroftm.fitnessmanagement.infra.client.cep.CepClient;
 import com.leandroftm.fitnessmanagement.infra.client.cep.CepResponseDTO;
 import com.leandroftm.fitnessmanagement.repository.StudentRepository;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
