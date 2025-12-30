@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +49,25 @@ public class StudentService {
     @Transactional(readOnly = true)
     public Page<StudentListDTO> findAll(Pageable pageable) {
         return studentRepository.findAllByStatus(StudentStatus.ACTIVE, pageable).map(StudentListDTO::new);
+    }
+
+    public void update(Long id, StudentUpdateDTO dto) {
+        Student student = findByIdOrThrow(id);
+        if (student.getStatus() == StudentStatus.INACTIVE) {
+            throw new StudentInactiveException(id);
+        }
+
+        if (!student.getEmail().equals(dto.email())) {
+            validateEmailUnique(dto.email());
+            student.setEmail(dto.email());
+        }
+
+        student.setFullName(dto.fullName());
+        student.setPhoneNumber(dto.phoneNumber());
+        student.setGender(dto.gender());
+
+        Address address = student.getAddress();
+        updateAddressFromCep(address, dto.address());
     }
 
     public void deactivate(Long id) {
