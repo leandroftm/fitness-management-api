@@ -17,28 +17,20 @@ import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.Trainin
 import com.leandroftm.fitnessmanagement.repository.ExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramExerciseRepository;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class TrainingProgramExerciseService {
 
     private final TrainingProgramExerciseRepository trainingProgramExerciseRepository;
     private final ExerciseRepository exerciseRepository;
     private final TrainingProgramRepository programRepository;
-
-    public TrainingProgramExerciseService(
-            TrainingProgramExerciseRepository trainingProgramExerciseRepository,
-            ExerciseRepository exerciseRepository,
-            TrainingProgramRepository programRepository
-    ) {
-        this.trainingProgramExerciseRepository = trainingProgramExerciseRepository;
-        this.exerciseRepository = exerciseRepository;
-        this.programRepository = programRepository;
-    }
 
     public Long create(TrainingProgramExerciseCreateRequestDTO dto, Long programId) {
         TrainingProgram program = findProgramById(programId);

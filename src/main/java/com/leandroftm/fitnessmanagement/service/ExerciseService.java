@@ -10,6 +10,7 @@ import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseAlread
 import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseAlreadyInactiveException;
 import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseNotFoundException;
 import com.leandroftm.fitnessmanagement.repository.ExerciseRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +20,11 @@ import java.time.LocalDateTime;
 
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
-
-    public ExerciseService(ExerciseRepository exerciseRepository) {
-        this.exerciseRepository = exerciseRepository;
-    }
 
     public Long create(ExerciseCreateRequestDTO dto) {
         if (exerciseRepository.existsByNameIgnoreCase(dto.name())) {

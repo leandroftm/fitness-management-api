@@ -7,6 +7,7 @@ import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramListD
 import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramUpdateDTO;
 import com.leandroftm.fitnessmanagement.exception.domain.trainingprogram.*;
 import com.leandroftm.fitnessmanagement.repository.TrainingProgramRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class TrainingProgramService {
 
     private final TrainingProgramRepository trainingProgramRepository;
-
-    public TrainingProgramService(TrainingProgramRepository trainingProgramRepository) {
-        this.trainingProgramRepository = trainingProgramRepository;
-    }
 
     public Long create(TrainingProgramCreateRequestDTO dto) {
         TrainingProgram trainingProgram = trainingProgramRepository.save(toEntity(dto));

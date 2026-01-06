@@ -5,6 +5,7 @@ import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseListDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.ExerciseService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -15,14 +16,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/exercises")
 public class ExerciseController {
 
     private final ExerciseService exerciseService;
-
-    public ExerciseController(ExerciseService exerciseService) {
-        this.exerciseService = exerciseService;
-    }
 
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody ExerciseCreateRequestDTO dto) {
