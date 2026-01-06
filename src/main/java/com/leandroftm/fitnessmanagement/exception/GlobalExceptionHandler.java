@@ -1,9 +1,8 @@
 package com.leandroftm.fitnessmanagement.exception;
 
 import com.leandroftm.fitnessmanagement.exception.domain.DomainException;
-import com.leandroftm.fitnessmanagement.exception.domain.student.StudentNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.NotFoundException;
 import com.leandroftm.fitnessmanagement.exception.dto.ApiErrorDTO;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorDTO> handleValidationException(MethodArgumentNotValidException ex,
-                                                                 HttpServletRequest request) {
+    public ResponseEntity<ApiErrorDTO> handleValidation(MethodArgumentNotValidException ex,
+                                                        HttpServletRequest request) {
         String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -24,65 +23,38 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .orElse("Validation error");
 
+        return buildError(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleNotFound(NotFoundException ex,
+                                                      HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ApiErrorDTO> handleDomain(DomainException ex,
+                                                    HttpServletRequest request) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorDTO> handleUnexpected(Exception ex, HttpServletRequest request) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", request);
+    }
+
+    private ResponseEntity<ApiErrorDTO> buildError(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request
+    ) {
         ApiErrorDTO error = new ApiErrorDTO(
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                status.value(),
+                status.getReasonPhrase(),
                 message,
                 request.getRequestURI()
         );
-
-        return ResponseEntity.badRequest().body(error);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex,
-                                                                      HttpServletRequest request) {
-        ApiErrorDTO error = new ApiErrorDTO(
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.badRequest().body(error);
-    }
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiErrorDTO> handleEntityNotFound(EntityNotFoundException ex,
-                                                            HttpServletRequest request) {
-        ApiErrorDTO error = new ApiErrorDTO(
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ApiErrorDTO> handleDomainException(DomainException ex,
-                                                            HttpServletRequest request) {
-        ApiErrorDTO error = new ApiErrorDTO(
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.badRequest().body(error);
-    }
-
-    @ExceptionHandler(StudentNotFoundException.class)
-    public ResponseEntity<ApiErrorDTO> handleStudentNotFoundException(StudentNotFoundException ex,
-                                                                      HttpServletRequest request) {
-        ApiErrorDTO error = new ApiErrorDTO(
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return ResponseEntity.status(status).body(error);
     }
 }

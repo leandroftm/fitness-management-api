@@ -5,6 +5,7 @@ import com.leandroftm.fitnessmanagement.dto.student.StudentListDTO;
 import com.leandroftm.fitnessmanagement.dto.student.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.StudentService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -15,14 +16,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/students")
 public class StudentController {
 
     private final StudentService studentService;
-
-    public StudentController(StudentService studentService) {
-        this.studentService = studentService;
-    }
 
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody StudentCreateRequestDTO dto) {
