@@ -70,19 +70,6 @@ public class TrainingProgramService {
         program.setDeactivatedAt(null);
     }
 
-    //TODO
-
-    //ADD EXERCISE
-
-    //REMOVE EXERCISE
-    /*
-    no repeat same exercise on same program
-    no alter inactive program
-    no add inactive exercise
-    required exercise order
-    program can be: activate/deactivate
-    */
-
     private TrainingProgram findByIdOrThrow(Long id) {
         return trainingProgramRepository.findById(id).orElseThrow(
                 () -> new TrainingProgramNotFoundException(id)
