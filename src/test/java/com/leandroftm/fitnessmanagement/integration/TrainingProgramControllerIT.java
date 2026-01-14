@@ -13,6 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,48 +30,26 @@ public class TrainingProgramControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    //CREATE
     @Test
     void shouldCreateTrainingProgram() throws Exception {
-        TrainingProgramCreateRequestDTO dto =
-                new TrainingProgramCreateRequestDTO(
-                        "Push Day",
-                        "Chest and triceps workout"
-                );
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
+                "Push Day",
+                "Chest and triceps workout"
+        );
         mockMvc.perform(post("/training-programs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location")
-                );
-    }
-
-    @Test
-    void shouldListActiveTrainingPrograms() throws Exception {
-        TrainingProgramCreateRequestDTO dto =
-                new TrainingProgramCreateRequestDTO(
-                        "Pull Day",
-                        "Back and biceps"
-                );
-
-        mockMvc.perform(post("/training-programs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(get("/training-programs"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].name").value("Pull Day"));
+                .andExpect(header().string("Location", containsString("/training-programs/1")));
     }
 
     @Test
     void shouldReturnBadRequestWhenDuplicatedName() throws Exception {
-        TrainingProgramCreateRequestDTO dto =
-                new TrainingProgramCreateRequestDTO(
-                        "Leg Day",
-                        "Leg workout"
-                );
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
+                "Leg Day",
+                "Leg workout"
+        );
 
         mockMvc.perform(post("/training-programs")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -82,38 +62,34 @@ public class TrainingProgramControllerIT {
                 .andExpect(status().isBadRequest());
     }
 
+    //LIST
     @Test
-    void shouldDeactivateTrainingProgram() throws Exception {
-        TrainingProgramCreateRequestDTO dto =
-                new TrainingProgramCreateRequestDTO(
-                        "Push Day",
-                        "Chest and triceps workout"
-                );
+    void shouldListActiveTrainingPrograms() throws Exception {
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
+                "Pull Day",
+                "Back and biceps"
+        );
 
-        MvcResult result = mockMvc.perform(post("/training-programs")
+        mockMvc.perform(post("/training-programs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated())
-                .andReturn();
+                .andExpect(status().isCreated());
 
-        Long id = extractId(result);
-
-        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/training-programs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].id").isNotEmpty())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[*].name").value(hasItem("Pull Day")));
     }
 
     @Test
     void shouldListAfterDeactivateTrainingProgram() throws Exception {
-        TrainingProgramCreateRequestDTO dto = new TrainingProgramCreateRequestDTO(
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
                 "Push Day",
                 "Chest and triceps workout");
-        MvcResult result = mockMvc.perform(post("/training-programs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated())
-                .andReturn();
 
-        Long id = extractId(result);
+        Long id = createTrainingProgram(dto);
 
         mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
                 .andExpect(status().isNoContent());
@@ -124,21 +100,16 @@ public class TrainingProgramControllerIT {
                 .andExpect(jsonPath("$.content.length()").value(0));
     }
 
+    //UPDATE
     @Test
     void shouldUpdateTrainingProgram() throws Exception {
-        TrainingProgramCreateRequestDTO dto = new TrainingProgramCreateRequestDTO(
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
                 "Push Day",
                 "Chest and triceps workout");
 
-        MvcResult result = mockMvc.perform(post("/training-programs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated())
-                .andReturn();
+        Long id = createTrainingProgram(dto);
 
-        Long id = extractId(result);
-
-        TrainingProgramUpdateDTO updateDTO = new TrainingProgramUpdateDTO(
+        TrainingProgramUpdateDTO updateDTO = updateTrainingProgram(
                 "Leg Day",
                 "Leg workout");
 
@@ -150,11 +121,59 @@ public class TrainingProgramControllerIT {
 
         mockMvc.perform(get("/training-programs"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].name").value("Leg Day"))
-                .andExpect(jsonPath("$.content[0].description").value("Leg workout"));
+                .andExpect(jsonPath("$.content[*].name").value(hasItem("Leg Day")))
+                .andExpect(jsonPath("$.content[*].description").value(hasItem("Leg workout")));
     }
 
-    public Long extractId(MvcResult result) {
+    @Test
+    void shouldReturnBadRequestWhenUpdateTrainingProgramToDuplicatedName() throws Exception {
+        Long id1 = createTrainingProgram(trainingProgram("Push Day", "Chest and triceps workout"));
+        Long id2 = createTrainingProgram(trainingProgram("Leg Day", "Leg workout"));
+
+        TrainingProgramUpdateDTO updateDTO = updateTrainingProgram("Push Day", "Any");
+
+        mockMvc.perform(put("/training-programs/{id}", id2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenDeactivateAlreadyInactiveTrainingProgram() throws Exception {
+        TrainingProgramCreateRequestDTO dto = trainingProgram(
+                "Push Day",
+                "Chest and triceps workout"
+        );
+
+        Long id = createTrainingProgram(dto);
+
+        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
+                .andExpect(status().isBadRequest());
+    }
+
+    //HELPER METHODS
+    private Long createTrainingProgram(TrainingProgramCreateRequestDTO dto) throws Exception {
+        MvcResult result = mockMvc.perform(post("/training-programs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return extractId(result);
+    }
+
+    private TrainingProgramUpdateDTO updateTrainingProgram(String name, String description) {
+        return new TrainingProgramUpdateDTO(name, description);
+    }
+
+    private TrainingProgramCreateRequestDTO trainingProgram(String name, String description) {
+        return new TrainingProgramCreateRequestDTO(name, description);
+    }
+
+    private Long extractId(MvcResult result) {
         String location = result.getResponse().getHeader("Location");
         assertNotNull(location, "Location header must be present");
 
