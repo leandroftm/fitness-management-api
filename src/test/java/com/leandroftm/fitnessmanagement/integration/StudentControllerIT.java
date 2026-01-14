@@ -235,7 +235,7 @@ public class StudentControllerIT {
                 .andExpect(jsonPath("$.message", containsString("inactive")));
     }
 
-    //DEACTIVE
+    //DEACTIVATE
     @Test
     void shouldDeactivateActiveStudent() throws Exception {
         mockValidCep();
