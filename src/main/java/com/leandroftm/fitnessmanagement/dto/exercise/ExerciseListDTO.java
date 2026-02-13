@@ -1,20 +1,23 @@
 package com.leandroftm.fitnessmanagement.dto.exercise;
 
 import com.leandroftm.fitnessmanagement.domain.entity.Exercise;
+import com.leandroftm.fitnessmanagement.domain.enums.ExerciseStatus;
 import com.leandroftm.fitnessmanagement.domain.enums.MuscleGroup;
 
 public record ExerciseListDTO(
         Long id,
         String name,
         String videoUrl,
-        MuscleGroup muscleGroup
+        MuscleGroup muscleGroup,
+        ExerciseStatus status
         ) {
     public ExerciseListDTO(Exercise exercise) {
         this(
                 exercise.getId(),
                 exercise.getName(),
                 exercise.getVideoUrl(),
-                exercise.getMuscleGroup()
+                exercise.getMuscleGroup(),
+                exercise.getStatus()
         );
     }
 }

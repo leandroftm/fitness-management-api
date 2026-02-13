@@ -1,6 +1,7 @@
 package com.leandroftm.fitnessmanagement.controller;
 
 import com.leandroftm.fitnessmanagement.dto.student.StudentCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.student.StudentDetailsDTO;
 import com.leandroftm.fitnessmanagement.dto.student.StudentListDTO;
 import com.leandroftm.fitnessmanagement.dto.student.StudentUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.StudentService;
@@ -38,6 +39,12 @@ public class StudentController {
     public ResponseEntity<Page<StudentListDTO>> list(@PageableDefault(size = 10) Pageable pageable) {
         Page<StudentListDTO> page = studentService.findAll(pageable);
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentDetailsDTO> getById(@PathVariable Long id) {
+        StudentDetailsDTO dto = studentService.getById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")

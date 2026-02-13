@@ -1,6 +1,8 @@
 package com.leandroftm.fitnessmanagement.controller;
 
+import com.leandroftm.fitnessmanagement.domain.entity.Exercise;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseDetailsDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseListDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseUpdateDTO;
 import com.leandroftm.fitnessmanagement.service.ExerciseService;
@@ -40,6 +42,12 @@ public class ExerciseController {
         Page<ExerciseListDTO> page = exerciseService.list(pageable);
 
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ExerciseDetailsDTO> getById(@PathVariable Long id) {
+        ExerciseDetailsDTO dto = exerciseService.getById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")

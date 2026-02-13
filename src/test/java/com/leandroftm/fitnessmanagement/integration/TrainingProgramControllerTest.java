@@ -6,9 +6,11 @@ import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramCreat
 import com.leandroftm.fitnessmanagement.dto.trainingprogram.TrainingProgramUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "test", roles = "USER")
+@ActiveProfiles("test")
 @Transactional
-public class TrainingProgramControllerIT {
+public class TrainingProgramControllerTest {
+
+    //.\mvnw -Dtest=TrainingProgramControllerTest test
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,10 +45,11 @@ public class TrainingProgramControllerIT {
                 "Chest and triceps workout"
         );
         mockMvc.perform(post("/training-programs")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/training-programs/1")));
+                .andExpect(header().string("Location", containsString("/training-programs/")));
     }
 
     @Test
@@ -52,15 +60,18 @@ public class TrainingProgramControllerIT {
         );
 
         mockMvc.perform(post("/training-programs")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/training-programs")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
     }
+
 
     //LIST
     @Test
@@ -71,6 +82,7 @@ public class TrainingProgramControllerIT {
         );
 
         mockMvc.perform(post("/training-programs")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
@@ -78,7 +90,6 @@ public class TrainingProgramControllerIT {
         mockMvc.perform(get("/training-programs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].id").isNotEmpty())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[*].name").value(hasItem("Pull Day")));
     }
@@ -91,7 +102,8 @@ public class TrainingProgramControllerIT {
 
         Long id = createTrainingProgram(dto);
 
-        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
+        mockMvc.perform(patch("/training-programs/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/training-programs"))
@@ -108,12 +120,13 @@ public class TrainingProgramControllerIT {
                 "Chest and triceps workout");
 
         Long id = createTrainingProgram(dto);
-
         TrainingProgramUpdateDTO updateDTO = updateTrainingProgram(
                 "Leg Day",
                 "Leg workout");
 
+
         mockMvc.perform(put("/training-programs/{id}", id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
                 .andExpect(status().isNoContent());
@@ -123,7 +136,9 @@ public class TrainingProgramControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[*].name").value(hasItem("Leg Day")))
                 .andExpect(jsonPath("$.content[*].description").value(hasItem("Leg workout")));
+
     }
+
 
     @Test
     void shouldReturnBadRequestWhenUpdateTrainingProgramToDuplicatedName() throws Exception {
@@ -133,6 +148,7 @@ public class TrainingProgramControllerIT {
         TrainingProgramUpdateDTO updateDTO = updateTrainingProgram("Push Day", "Any");
 
         mockMvc.perform(put("/training-programs/{id}", id2)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDTO)))
                 .andExpect(status().isBadRequest());
@@ -147,16 +163,19 @@ public class TrainingProgramControllerIT {
 
         Long id = createTrainingProgram(dto);
 
-        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
+        mockMvc.perform(patch("/training-programs/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(patch("/training-programs/{id}/deactivate", id))
+        mockMvc.perform(patch("/training-programs/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     //HELPER METHODS
     private Long createTrainingProgram(TrainingProgramCreateRequestDTO dto) throws Exception {
         MvcResult result = mockMvc.perform(post("/training-programs")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())

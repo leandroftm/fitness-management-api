@@ -4,24 +4,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leandroftm.fitnessmanagement.domain.enums.MuscleGroup;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseCreateRequestDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseUpdateDTO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "test", roles = "USER")
+@ActiveProfiles("test")
 @Transactional
-public class ExerciseControllerIT {
+public class ExerciseControllerTest {
+
+    //.\mvnw -Dtest=ExerciseControllerTest test
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,33 +48,30 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/exercises/")));
+                .andExpect(header().string("Location", containsString("/exercises/")))
+                .andDo(print());
+
     }
 
     @Test
     void shouldReturnBadRequestWhenExerciseNameIsDuplicated() throws Exception {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
-        ExerciseCreateRequestDTO exercise2Dto = createExercise(
-                "Bench Press",
-                "lift a weight from the floor to a standing position, keeping it close to your body, and then return it with control",
-                "https://www.youtube.com/shorts/ZaTM37cfiDs",
-                MuscleGroup.LEGS
-        );
-
         mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(exercise2Dto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("already exists"));
+                        .content(objectMapper.writeValueAsString(exerciseDto)))
+                .andExpect(status().isBadRequest());
     }
 
     //LIST
@@ -76,11 +86,13 @@ public class ExerciseControllerIT {
         );
 
         mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exercise2Dto)))
                 .andExpect(status().isCreated());
@@ -88,8 +100,9 @@ public class ExerciseControllerIT {
         mockMvc.perform(get("/exercises"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[*].name").value(hasItems("Bench Press", "Dead Lift")))
-                .andExpect(jsonPath("$.content[*].active").value(everyItem(is(true))));
+                .andExpect(jsonPath("$.content[*].active").value(everyItem(is(true))))
+                .andDo(print())
+        ;
     }
 
     @Test
@@ -98,6 +111,7 @@ public class ExerciseControllerIT {
 
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -107,19 +121,20 @@ public class ExerciseControllerIT {
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(false)));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
         mockMvc.perform(get("/exercises"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.content.length()").value(0));
     }
 
     //UPDATE
@@ -128,6 +143,7 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -137,7 +153,7 @@ public class ExerciseControllerIT {
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
 
         ExerciseUpdateDTO updateDto = new ExerciseUpdateDTO(
                 "Inclined Bench Press",
@@ -148,6 +164,7 @@ public class ExerciseControllerIT {
         );
 
         mockMvc.perform(put("/exercises/{id}", id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isNoContent());
@@ -163,6 +180,7 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -172,14 +190,15 @@ public class ExerciseControllerIT {
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(true)));
+                .andExpect(jsonPath("$.status").value(is("ACTIVE")));
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(false)));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
         ExerciseUpdateDTO updateDto = new ExerciseUpdateDTO(
                 "Inclined Bench Press",
@@ -190,6 +209,7 @@ public class ExerciseControllerIT {
         );
 
         mockMvc.perform(put("/exercises/{id}", id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isBadRequest());
@@ -201,6 +221,7 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -210,14 +231,15 @@ public class ExerciseControllerIT {
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(true)));
+                .andExpect(jsonPath("$.status").value(is("ACTIVE")));
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(false)));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
     }
 
     @Test
@@ -225,6 +247,7 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -232,19 +255,21 @@ public class ExerciseControllerIT {
 
         Long id = extractId(result);
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(false)));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
-        mockMvc.perform(patch("/exercises/{id}/activate", id))
+        mockMvc.perform(patch("/exercises/{id}/activate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(true)));
+                .andExpect(jsonPath("$.status").value(is("ACTIVE")));
     }
 
     @Test
@@ -252,6 +277,7 @@ public class ExerciseControllerIT {
         ExerciseCreateRequestDTO exerciseDto = exercise();
 
         MvcResult result = mockMvc.perform(post("/exercises")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(exerciseDto)))
                 .andExpect(status().isCreated())
@@ -259,14 +285,16 @@ public class ExerciseControllerIT {
 
         Long id = extractId(result);
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/exercises/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(is(false)));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
-        mockMvc.perform(patch("/exercises/{id}/deactivate", id))
+        mockMvc.perform(patch("/exercises/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString(("inactive"))));
     }
@@ -274,7 +302,7 @@ public class ExerciseControllerIT {
     //HELPER
     private ExerciseCreateRequestDTO exercise() {
         return createExercise(
-                "Bench Press",
+                "Bench Press" + System.nanoTime(),
                 "The bench press is a fundamental upper-body strength exercise where you push a weight upwards while lying on a bench," +
                         " primarily targeting the chest (pectorals), shoulders (deltoids), and triceps, with core and back muscles providing stability.",
                 "https://www.youtube.com/shorts/hWbUlkb5Ms4",

@@ -23,6 +23,10 @@ public class TrainingProgramService {
     private final TrainingProgramRepository trainingProgramRepository;
 
     public Long create(TrainingProgramCreateRequestDTO dto) {
+        if (trainingProgramRepository.existsByNameIgnoreCase(dto.name())) {
+            throw new DuplicateTrainingProgramNameException(dto.name());
+        }
+
         TrainingProgram trainingProgram = trainingProgramRepository.save(toEntity(dto));
         return trainingProgram.getId();
     }

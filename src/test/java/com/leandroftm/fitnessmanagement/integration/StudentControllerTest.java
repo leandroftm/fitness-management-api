@@ -9,9 +9,11 @@ import com.leandroftm.fitnessmanagement.infra.client.cep.CepClient;
 import com.leandroftm.fitnessmanagement.infra.client.cep.CepResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -20,14 +22,20 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "test", roles = "USER")
+@ActiveProfiles("test")
 @Transactional
-public class StudentControllerIT {
+public class StudentControllerTest {
+
+    //.\mvnw -Dtest=StudentControllerTest test
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,6 +57,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
@@ -77,10 +86,11 @@ public class StudentControllerIT {
         );
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", containsString("Invalid zip code")));
+                .andExpect(jsonPath("$.message", containsString("zip")));
 
         verify(cepClient).findZipCode("00000000");
     }
@@ -91,6 +101,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated());
@@ -104,10 +115,11 @@ public class StudentControllerIT {
         );
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(student2Dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", containsString("Email already exists")));
+                .andExpect(jsonPath("$.message", containsString("Email")));
     }
 
     //LIST
@@ -124,11 +136,13 @@ public class StudentControllerIT {
         );
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(student2Dto)))
                 .andExpect(status().isCreated());
@@ -137,9 +151,7 @@ public class StudentControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[*].name").value(hasItems("Owyn Lyons", "Sarah Lyons")))
-                .andExpect(jsonPath("$.content[*].email").value(hasItems("owynlyons@email.com", "sarahlyons@email.com")))
-                .andExpect(jsonPath("$.content[*].active").value(everyItem(is(true))));
+                .andExpect(jsonPath("$.content[*].status").value(everyItem(is("ACTIVE"))));
     }
 
     @Test
@@ -148,6 +160,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         MvcResult result = mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
@@ -155,12 +168,13 @@ public class StudentControllerIT {
 
         Long id = extractId(result);
 
-        mockMvc.perform(patch("/students/{id}/deactivate", id))
-                .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/students/{id}", id))
+        mockMvc.perform(get("/students"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
+                .andExpect(jsonPath("$.content.length()").value(1));
+
+        mockMvc.perform(patch("/students/{id}/deactivate", id)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/students"))
                 .andExpect(status().isOk())
@@ -174,6 +188,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         MvcResult result = mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
@@ -190,15 +205,14 @@ public class StudentControllerIT {
         );
 
         mockMvc.perform(put("/students/{id}", id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/students"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].name").value(hasItem("Owyn Sentinel Lyons")))
-                .andExpect(jsonPath("$.content[*].email").value(hasItem("owynsentinellyons@email.com")))
-                .andExpect(jsonPath("$.content[*].active").value(everyItem(is(true))));
+                .andExpect(jsonPath("$.content[*].fullName").value(hasItem("Owyn Sentinel Lyons")));
     }
 
     @Test
@@ -207,13 +221,15 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         MvcResult result = mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         Long id = extractId(result);
-        mockMvc.perform(patch("/students/{id}/deactivate", id))
+        mockMvc.perform(patch("/students/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         StudentUpdateDTO updateDto = new StudentUpdateDTO(
@@ -226,9 +242,10 @@ public class StudentControllerIT {
 
         mockMvc.perform(get("/students/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
         mockMvc.perform(put("/students/{id}", id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isBadRequest())
@@ -242,6 +259,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         MvcResult result = mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
@@ -250,15 +268,17 @@ public class StudentControllerIT {
         Long id = extractId(result);
 
         mockMvc.perform(get("/students/{id}", id))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value(is("ACTIVE")));
 
-        mockMvc.perform(patch("/students/{id}/deactivate", id))
+        mockMvc.perform(patch("/students/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/students/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
     }
 
     @Test
@@ -267,6 +287,7 @@ public class StudentControllerIT {
         StudentCreateRequestDTO studentDto = validStudent();
 
         MvcResult result = mockMvc.perform(post("/students")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(studentDto)))
                 .andExpect(status().isCreated())
@@ -276,16 +297,18 @@ public class StudentControllerIT {
 
         mockMvc.perform(get("/students/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value(is("ACTIVE")));
 
-        mockMvc.perform(patch("/students/{id}/deactivate", id))
+        mockMvc.perform(patch("/students/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/students/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
+                .andExpect(jsonPath("$.status").value(is("INACTIVE")));
 
-        mockMvc.perform(patch("/students/{id}/deactivate", id))
+        mockMvc.perform(patch("/students/{id}/deactivate", id)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 

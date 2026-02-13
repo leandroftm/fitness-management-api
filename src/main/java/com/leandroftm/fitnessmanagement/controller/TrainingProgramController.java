@@ -45,7 +45,7 @@ public class TrainingProgramController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody TrainingProgramUpdateDTO dto) {
         trainingProgramService.update(id, dto);
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/deactivate")

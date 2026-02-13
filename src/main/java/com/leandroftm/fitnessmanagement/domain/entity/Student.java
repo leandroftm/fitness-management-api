@@ -64,9 +64,7 @@ public class Student {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private LocalDateTime deletedAt;
+    private LocalDateTime deactivatedAt;
 
     @NotNull
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

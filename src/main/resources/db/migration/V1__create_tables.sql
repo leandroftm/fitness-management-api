@@ -8,7 +8,7 @@ CREATE TABLE students
     status         VARCHAR(20)  NOT NULL,
     created_at     TIMESTAMP    NOT NULL,
     updated_at     TIMESTAMP    NOT NULL,
-    deactivated_at TIMESTAMP    NOT NULL,
+    deactivated_at TIMESTAMP NULL,
 
     CONSTRAINT uk_student_email UNIQUE (email)
 );
@@ -41,7 +41,7 @@ CREATE TABLE exercises
     status         VARCHAR(20)  NOT NULL,
     created_at     TIMESTAMP    NOT NULL,
     updated_at     TIMESTAMP    NOT NULL,
-    deactivated_at TIMESTAMP    NOT NULL,
+    deactivated_at TIMESTAMP NULL,
 
     CONSTRAINT uk_exercise_name UNIQUE (name)
 );
@@ -54,7 +54,7 @@ CREATE TABLE training_programs
     status         VARCHAR(20)  NOT NULL,
     created_at     TIMESTAMP    NOT NULL,
     updated_at     TIMESTAMP    NOT NULL,
-    deactivated_at TIMESTAMP
+    deactivated_at TIMESTAMP NULL
 );
 
 CREATE TABLE training_program_exercises

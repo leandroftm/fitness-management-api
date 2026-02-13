@@ -2,10 +2,7 @@ package com.leandroftm.fitnessmanagement.service;
 
 
 import com.leandroftm.fitnessmanagement.domain.enums.StudentStatus;
-import com.leandroftm.fitnessmanagement.dto.student.AddressCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.student.StudentCreateRequestDTO;
-import com.leandroftm.fitnessmanagement.dto.student.StudentListDTO;
-import com.leandroftm.fitnessmanagement.dto.student.StudentUpdateDTO;
+import com.leandroftm.fitnessmanagement.dto.student.*;
 import com.leandroftm.fitnessmanagement.domain.entity.Address;
 import com.leandroftm.fitnessmanagement.domain.entity.Student;
 import com.leandroftm.fitnessmanagement.exception.domain.student.*;
@@ -49,6 +46,13 @@ public class StudentService {
         return studentRepository.findAllByStatus(StudentStatus.ACTIVE, pageable).map(StudentListDTO::new);
     }
 
+    @Transactional(readOnly = true)
+    public StudentDetailsDTO getById(Long id) {
+        Student student = findByIdOrThrow(id);
+
+        return new StudentDetailsDTO(student);
+    }
+
     public void update(Long id, StudentUpdateDTO dto) {
         Student student = findByIdOrThrow(id);
         if (student.getStatus() == StudentStatus.INACTIVE) {
@@ -82,6 +86,8 @@ public class StudentService {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new StudentNotFoundException(id));
     }
+
+
 
     private void updateAddressFromCep(Address address, AddressCreateRequestDTO dto) {
         String normalizeZipCode = normalizeZipCode(dto.zipCode());
@@ -126,4 +132,5 @@ public class StudentService {
             throw new DuplicateEmailException(email);
         }
     }
+
 }

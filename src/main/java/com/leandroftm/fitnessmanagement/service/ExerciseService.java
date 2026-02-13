@@ -3,12 +3,10 @@ package com.leandroftm.fitnessmanagement.service;
 import com.leandroftm.fitnessmanagement.domain.entity.Exercise;
 import com.leandroftm.fitnessmanagement.domain.enums.ExerciseStatus;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseCreateRequestDTO;
+import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseDetailsDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseListDTO;
 import com.leandroftm.fitnessmanagement.dto.exercise.ExerciseUpdateDTO;
-import com.leandroftm.fitnessmanagement.exception.domain.exercise.DuplicateExerciseNameException;
-import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseAlreadyActiveException;
-import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseAlreadyInactiveException;
-import com.leandroftm.fitnessmanagement.exception.domain.exercise.ExerciseNotFoundException;
+import com.leandroftm.fitnessmanagement.exception.domain.exercise.*;
 import com.leandroftm.fitnessmanagement.repository.ExerciseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +41,11 @@ public class ExerciseService {
         Exercise exercise = exerciseRepository.findById(id)
                 .orElseThrow(() -> new ExerciseNotFoundException(id));
 
+        if (exercise.getStatus() == ExerciseStatus.INACTIVE) {
+            throw new ExerciseInactiveException(id);
+        }
+
+
         if (!exercise.getName().equals(dto.name())) {
             if (exerciseRepository.existsByNameIgnoreCase(dto.name())) {
                 throw new DuplicateExerciseNameException(dto.name());
@@ -55,7 +58,7 @@ public class ExerciseService {
         exercise.setMuscleGroup(dto.muscleGroup());
     }
 
-    @Transactional
+
     public void deactivate(Long id) {
         Exercise exercise = findByIdOrThrow(id);
 
@@ -66,7 +69,7 @@ public class ExerciseService {
         exercise.setDeactivatedAt(LocalDateTime.now());
     }
 
-    @Transactional
+
     public void activate(Long id) {
         Exercise exercise = findByIdOrThrow(id);
 
@@ -92,4 +95,12 @@ public class ExerciseService {
 
         return exercise;
     }
+
+    @Transactional(readOnly = true)
+    public ExerciseDetailsDTO getById(Long id) {
+        Exercise exercise = findByIdOrThrow(id);
+
+        return new ExerciseDetailsDTO(exercise);
+    }
+
 }

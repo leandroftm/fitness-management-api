@@ -3,6 +3,7 @@ package com.leandroftm.fitnessmanagement.domain.entity;
 import com.leandroftm.fitnessmanagement.domain.enums.TrainingProgramStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class TrainingProgram {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TrainingProgramStatus status;
